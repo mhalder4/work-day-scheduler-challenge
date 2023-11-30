@@ -1,20 +1,16 @@
-// Wrap all code that interacts with the DOM in a call to jQuery to ensure that
-// the code isn't run until the browser has finished rendering all the elements
-// in the html.
-
 const currentDayElem = $("#currentDay");
 const blockContainElem = $(".blocks");
 
-
 let notes = [];
 
+//Sets the start and end of the hour blocks in the note taker based on 24-hour clock
 const startOfDay = 9;
 const endOfDay = 17;
 
-
+// Loads local storage and calls createNotes if no local storage exists
 function loadLocalStorage() {
   const tempNotes = JSON.parse(localStorage.getItem("notes"));
-  console.log(tempNotes);
+
   if (tempNotes !== null) {
     tempNotes.forEach(function (object) {
       notes.push(object);
@@ -24,15 +20,14 @@ function loadLocalStorage() {
   }
 }
 
-
+// Updates local storage
 function updateLocalStorage() {
   localStorage.setItem("notes", JSON.stringify(notes));
 }
 
-
+// Creates a framework for local storage
 function createNotes() {
   const isNotes = (!notes);
-  console.log(isNotes);
 
   if (!isNotes) {
     for (var i = startOfDay; i <= endOfDay; i++) {
@@ -44,26 +39,21 @@ function createNotes() {
       notes.push(dataObj);
     }
   }
-  console.log(notes);
-
 }
 
-
+// Displays the current date on the webpage
 function displayToday() {
   const today = dayjs().format("dddd, MMMM D");
-  console.log(today);
   currentDayElem.text(today);
 }
 
-
+// Renders the block for each hour of the day
 function renderHourBlocks() {
   const currentHour = dayjs().format("H");
-  // console.log(currentHour);
+
   loadLocalStorage();
-  // checkNotes();
 
   for (var i = startOfDay; i <= endOfDay; i++) {
-    // console.log(i);
     const textTime = determineTextTime(i);
     const noteIndex = notes.findIndex(item => item.id === `hour-${i}`);
     const noteText = notes[noteIndex].text;
@@ -71,10 +61,9 @@ function renderHourBlocks() {
   }
 }
 
-
+// Creates the necessary HTML for a single hour block
 function appendHourBlock(hour, currentHour, textTime, noteText) {
   const timeDiff = hour - currentHour;
-  // console.log(timeDiff);
 
   let timeId;
 
@@ -97,7 +86,7 @@ function appendHourBlock(hour, currentHour, textTime, noteText) {
   `);
 }
 
-
+// Determines what to display for AM vs PM
 function determineTextTime(hour) {
   let textTime;
 
@@ -114,10 +103,8 @@ function determineTextTime(hour) {
   return textTime;
 }
 
-
+// Handles saving text when the save button is clicked and updates local storage
 function handleSave(e) {
-  console.log($(e.target)[0].className);
-
   const verify = $(e.target)[0].className;
 
   let parentElem;
@@ -131,8 +118,6 @@ function handleSave(e) {
   }
 
   const textAreaElem = parentElem.children().eq(1);
-  console.log(parentElem);
-  console.log(textAreaElem);
 
   const noteId = parentElem[0].id;
   const noteText = textAreaElem.val();
@@ -140,45 +125,13 @@ function handleSave(e) {
   const idIndex = notes.findIndex(item => item.id === noteId);
 
   notes[idIndex].text = noteText;
-  console.log(idIndex);
-  console.log(notes);
 
   updateLocalStorage();
-
 }
 
 
 $(function () {
-
-
-  // TODO: Add a listener for click events on the save button. This code should
-  // use the id in the containing time-block as a key to save the user input in
-  // local storage. HINT: What does `this` reference in the click listener
-  // function? How can DOM traversal be used to get the "hour-x" id of the
-  // time-block containing the button that was clicked? How might the id be
-  // useful when saving the description in local storage?
-  //
-
-  blockContainElem.on("click", ".saveBtn", handleSave)
-
-  // TODO: Add code to apply the past, present, or future class to each time
-  // block by comparing the id to the current hour. HINTS: How can the id
-  // attribute of each time-block be used to conditionally add or remove the
-  // past, present, and future classes? How can Day.js be used to get the
-  // current hour in 24-hour time?
-  //
-  renderHourBlocks();
-
-
-
-
-  // TODO: Add code to get any user input that was saved in localStorage and set
-  // the values of the corresponding textarea elements. HINT: How can the id
-  // attribute of each time-block be used to do this?
-  //
-
-
-  // TODO: Add code to display the current date in the header of the page.
-
   displayToday();
+  renderHourBlocks();
+  blockContainElem.on("click", ".saveBtn", handleSave);
 });
