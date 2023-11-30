@@ -2,16 +2,50 @@
 // the code isn't run until the browser has finished rendering all the elements
 // in the html.
 
-const saveBtnElem = $(".saveBtn");
 const currentDayElem = $("#currentDay");
 const blockContainElem = $(".blocks");
 
 
 let notes = [];
 
+const startOfDay = 9;
+const endOfDay = 17;
+
+
+function loadLocalStorage() {
+  const tempNotes = JSON.parse(localStorage.getItem("notes"));
+  console.log(tempNotes);
+  if (tempNotes !== null) {
+    tempNotes.forEach(function (object) {
+      notes.push(object);
+    });
+  } else {
+    createNotes();
+  }
+}
+
 
 function updateLocalStorage() {
   localStorage.setItem("notes", JSON.stringify(notes));
+}
+
+
+function createNotes() {
+  const isNotes = (!notes);
+  console.log(isNotes);
+
+  if (!isNotes) {
+    for (var i = startOfDay; i <= endOfDay; i++) {
+      const dataObj = {
+        id: `hour-${i}`,
+        text: ""
+      };
+
+      notes.push(dataObj);
+    }
+  }
+  console.log(notes);
+
 }
 
 
@@ -25,17 +59,20 @@ function displayToday() {
 function renderHourBlocks() {
   const currentHour = dayjs().format("H");
   // console.log(currentHour);
+  loadLocalStorage();
+  // checkNotes();
 
-  for (var i = 9; i <= 17; i++) {
+  for (var i = startOfDay; i <= endOfDay; i++) {
     // console.log(i);
     const textTime = determineTextTime(i);
-    appendHourBlock(i, currentHour, textTime);
+    const noteIndex = notes.findIndex(item => item.id === `hour-${i}`);
+    const noteText = notes[noteIndex].text;
+    appendHourBlock(i, currentHour, textTime, noteText);
   }
-
 }
 
 
-function appendHourBlock(hour, currentHour, textTime) {
+function appendHourBlock(hour, currentHour, textTime, noteText) {
   const timeDiff = hour - currentHour;
   // console.log(timeDiff);
 
@@ -52,7 +89,7 @@ function appendHourBlock(hour, currentHour, textTime) {
   blockContainElem.append(`
     <div id="hour-${hour}" class="row time-block ${timeId}">
       <div class="col-2 col-md-1 hour text-center py-3">${textTime}</div>
-      <textarea class="col-8 col-md-10 description" rows="3"> </textarea>
+      <textarea class="col-8 col-md-10 description" rows="3">${noteText}</textarea>
       <button class="btn saveBtn col-2 col-md-1" aria-label="save">
       <i class="fas fa-save" aria-hidden="true"></i>
       </button>
@@ -100,12 +137,13 @@ function handleSave(e) {
   const noteId = parentElem[0].id;
   const noteText = textAreaElem.val();
 
-  const noteObj = {
-    id: noteId,
-    text: noteText
-  }
+  const idIndex = notes.findIndex(item => item.id === noteId);
 
-  console.log(noteObj);
+  notes[idIndex].text = noteText;
+  console.log(idIndex);
+  console.log(notes);
+
+  updateLocalStorage();
 
 }
 
